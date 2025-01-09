@@ -8,7 +8,7 @@ export const Product = defineType({
         defineField({
             name: "slug",
             title: "Post Slug",
-           type: "string", 
+           type: "slug", 
         }),
         defineField({
             name: "title",

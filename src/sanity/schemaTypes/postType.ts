@@ -30,5 +30,17 @@ export const postType = defineType({
             title: "Content",
             type: "text",
             }),
+            defineField(
+                {
+                    name: 'gallery',
+                    type: 'array',
+                    of: [
+                      { type: 'image' }
+                    ],
+                    options: {
+                      layout: 'grid'
+                    }
+                  }
+            )
     ]
 })

@@ -7,18 +7,34 @@ import { client } from "../../../sanity/lib/client";
 
 async function getData(slug: string): Promise<typeof postType[]> {
   const query = `
-    *[_type == "post" && slug == '${slug}']{
-      _id,
-      slug,
-      title,
-      subtitle,
-      "imageUrl": image.asset->url,
-      description
-    }`;
+  *[_type == "post" && slug == '${slug}']{
+    _id,
+    slug,
+    title,
+    subtitle,
+    "imageUrl": coalesce(image.asset->url, ""),
+    description,
+    gallery[] {
+      "url": coalesce(asset->url, "")
+    }
+  }`;
+
 
   const data: typeof postType[] = await client.fetch(query);
   return data;
 }
+
+type postType = {
+  _id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  imageUrl?: string;
+  description: string;
+  gallery: { url: string }[];
+};
+
+
 
 
 export default function BlogArticle({ params }: { params: { slug: string } }) {
@@ -44,42 +60,62 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
 
   return (
     <div>
-      {article.map((blog) => (
-        <div
-          className="flex mb-7 items-center px-1 sm:px-8 md:px-14 my-4 flex-col gap-3"
-          key={blog._id}
-        >
-          <div>
-            <div className="flex items-center justify-center mb-3">
-              <h1 className="font-bold mx-auto mt-5 text-4xl">
-                {blog.title}
-              </h1>
-            </div>
+{article.map((blog) => (
+  <div
+    className="flex flex-col gap-6 px-4 sm:px-8 md:px-14 my-8"
+    key={blog._id}
+  >
+    <div className="text-center">
+      {/* Blog Title */}
+      <h1 className="font-bold text-4xl text-gray-800">{blog.title}</h1>
 
-            {blog.subtitle && (
-              <h2 className="text-xl font-medium text-gray-600 mt-2">
-                {blog.subtitle}
-              </h2>
-            )}
+      {/* Blog Subtitle */}
+      {blog.subtitle && (
+        <h2 className="text-lg text-gray-600 font-medium mt-2">{blog.subtitle}</h2>
+      )}
+    </div>
 
-            <div className="w-[63vw] flex justify-center items-center">
-              <Image
-                src={blog.imageUrl || "/placeholder.png"}
-                alt={blog.title || "Blog Image"}
-                width={500}
-                height={500}
-                className="self-center mt-5 h-auto bg-cover rounded-md"
-              />
-            </div>
+    {/* Featured Image */}
+    <div className="w-full flex justify-center">
+      <Image
+        src={blog.imageUrl || "/placeholder.png"}
+        alt={blog.title || "Blog Image"}
+        width={800}
+        height={400}
+        className="rounded-lg shadow-lg object-cover"
+      />
+    </div>
 
-            <div className="flex items-center justify-center">
-              <p className="w-[65vw] mt-5 text-wrap tracking-wide leading-9 ">
-                {blog.description}
-              </p>
+    {/* Blog Description */}
+    <div className="prose max-w-none mx-auto text-gray-700 text-justify leading-8">
+      <p>{blog.description}</p>
+    </div>
+
+    {/* Gallery Section */}
+    {blog.gallery && blog.gallery.length > 0 && (
+      <div className="mt-10">
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">Gallery</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+          {blog.gallery.map((image, index) => (
+            <div
+              key={index}
+              className="overflow-hidden rounded-lg shadow-md hover:scale-105 transition-transform duration-200 w-400 h-300 mx-auto"
+            >
+             <Image
+  src={image.url}
+  alt={`Gallery image ${index + 1}`}
+  width={400}
+  height={300}
+  className="w-[400px] h-[300px] object-cover rounded-lg"
+/>
             </div>
-          </div>
+          ))}
         </div>
-      ))}
+      </div>
+    )}
+  </div>
+))}
+
 
       <div className="w-[65vw] mt-10 mx-auto p-5 border rounded-md">
         <h3 className="text-lg font-bold mb-3">Comments</h3>
