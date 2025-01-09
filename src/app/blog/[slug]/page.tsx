@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { postType } from "@/sanity/schemaTypes/postType";
 import { client } from "../../../sanity/lib/client";
+import { PortableText } from "@portabletext/react";
+
 
 async function getData(slug: string): Promise<typeof postType[]> {
   const query = `
@@ -85,7 +87,7 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
     </div>
 
     <div className="prose max-w-none mx-auto text-gray-700 text-justify leading-8">
-      <p>{blog.description}</p>
+    <PortableText value={blog.description} />
     </div>
 
     {blog.gallery && blog.gallery.length > 0 && (

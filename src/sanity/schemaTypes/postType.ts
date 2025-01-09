@@ -28,8 +28,11 @@ export const postType = defineType({
         defineField({
             name: "description",
             title: "Content",
-            type: "text",
-            }),
+            type: "array",
+            of: [
+              { type: "block" }, // Allow block-level elements like paragraphs, headings, bold, etc.
+            ],
+          }),      
             defineField(
                 {
                     name: 'gallery',
