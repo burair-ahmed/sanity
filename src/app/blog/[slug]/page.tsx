@@ -2,11 +2,22 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { postType } from "@/sanity/schemaTypes/postType";
 import { client } from "../../../sanity/lib/client";
 import { PortableText } from "@portabletext/react";
+import { PortableTextBlock } from "@portabletext/types";
+import Header from "@/app/components/header";
 
-async function getData(slug: string): Promise<typeof postType[]> {
+type postType = {
+  _id: string;
+  slug: string;
+  title: string;
+  subtitle?: string;
+  imageUrl?: string;
+  description: PortableTextBlock[];
+  gallery: { url: string }[];
+};
+
+async function getData(slug: string): Promise<postType[]> {
   const query = `
   *[_type == "post" && slug == '${slug}']{
     _id,
@@ -20,33 +31,32 @@ async function getData(slug: string): Promise<typeof postType[]> {
     }
   }`;
 
-  const data: typeof postType[] = await client.fetch(query);
-  return data;
+  try {
+    const data: postType[] = await client.fetch(query);
+    console.log("Fetched data: ", data);  // Logging the fetched data
+    return data;
+  } catch (error) {
+    console.error("Error fetching data: ", error);  // Catching and logging any errors
+    return [];
+  }
 }
 
-type postType = {
-  _id: string;
-  slug: string;
-  title: string;
-  subtitle?: string;
-  imageUrl?: string;
-  description: string;
-  gallery: { url: string }[];
-};
-
 export default function BlogArticle({ params }: { params: { slug: string } }) {
-  const [article, setArticle] = useState<typeof postType[]>([]);
+  const [article, setArticle] = useState<postType[]>([]);
   const [comments, setComments] = useState<string[]>([]);
   const [currentComment, setCurrentComment] = useState<string>("");
 
   useEffect(() => {
     const savedComments = JSON.parse(localStorage.getItem("comments") || "[]");
     setComments(savedComments);
-    
+
     async function fetchData() {
+      console.log("Fetching data for slug:", params.slug);  // Logging slug being used
       const result = await getData(params.slug);
+      console.log("Fetched result:", result);  // Logging the fetched result
       setArticle(result);
     }
+
     fetchData();
   }, [params.slug]);
 
@@ -61,16 +71,12 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
 
   return (
     <div>
+      <Header />
       {article.map((blog) => (
-        <div
-          className="flex flex-col gap-6 px-4 sm:px-8 md:px-14 my-8"
-          key={blog._id}
-        >
+        <div className="flex flex-col gap-6 px-4 sm:px-8 md:px-14 my-8" key={blog._id}>
           <div className="text-center">
             <h1 className="font-bold text-4xl text-gray-800">{blog.title}</h1>
-            {blog.subtitle && (
-              <h2 className="text-lg text-gray-600 font-medium mt-2">{blog.subtitle}</h2>
-            )}
+            {blog.subtitle && <h2 className="text-lg text-gray-600 font-medium mt-2">{blog.subtitle}</h2>}
           </div>
 
           <div className="w-full flex justify-center">
@@ -92,10 +98,7 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Gallery</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                 {blog.gallery.map((image, index) => (
-                  <div
-                    key={index}
-                    className="overflow-hidden rounded-lg shadow-md hover:scale-105 transition-transform duration-200 w-400 h-300 mx-auto"
-                  >
+                  <div key={index} className="overflow-hidden rounded-lg shadow-md hover:scale-105 transition-transform duration-200 w-400 h-300 mx-auto">
                     <Image
                       src={image.url}
                       alt={`Gallery image ${index + 1}`}

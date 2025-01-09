@@ -1,5 +1,5 @@
 import { client } from '../../sanity/lib/client';
-import { postType } from '../../sanity/schemaTypes/postType';
+import type { postType } from '../../sanity/schemaTypes/postType';
 
 export async function fetchPosts(): Promise<typeof postType[]> {
   const query = `*[_type == "post"]{
@@ -7,8 +7,11 @@ export async function fetchPosts(): Promise<typeof postType[]> {
     slug,
     title,
     subtitle,
-    "imageUrl": image.asset->url,
-    description
+    "imageUrl": coalesce(image.asset->url, ""),
+    description,
+    gallery[] {
+      "url": coalesce(asset->url, "")
+    }
   }`;
 
   try {
