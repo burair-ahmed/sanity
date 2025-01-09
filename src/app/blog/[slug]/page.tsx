@@ -66,16 +66,14 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
     key={blog._id}
   >
     <div className="text-center">
-      {/* Blog Title */}
+
       <h1 className="font-bold text-4xl text-gray-800">{blog.title}</h1>
 
-      {/* Blog Subtitle */}
       {blog.subtitle && (
         <h2 className="text-lg text-gray-600 font-medium mt-2">{blog.subtitle}</h2>
       )}
     </div>
 
-    {/* Featured Image */}
     <div className="w-full flex justify-center">
       <Image
         src={blog.imageUrl || "/placeholder.png"}
@@ -86,12 +84,10 @@ export default function BlogArticle({ params }: { params: { slug: string } }) {
       />
     </div>
 
-    {/* Blog Description */}
     <div className="prose max-w-none mx-auto text-gray-700 text-justify leading-8">
       <p>{blog.description}</p>
     </div>
 
-    {/* Gallery Section */}
     {blog.gallery && blog.gallery.length > 0 && (
       <div className="mt-10">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">Gallery</h3>
